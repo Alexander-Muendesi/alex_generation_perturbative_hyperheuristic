@@ -10,7 +10,7 @@ public class Chromosome {
     private final int minCodons;
     private final Random random;
     private double[] fitness; //will hold the hard constraint cost at index 0 and the soft constraint cost at index 1
-    private final int numCodons;
+    private int numCodons;
 
     /**
      * Cosntructor
