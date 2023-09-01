@@ -9,11 +9,12 @@ import java.util.Random;
 public class GrammaticalEvolution {
     private Map<Integer, Chromosome> population;
     private Random random;
-    private int tournamentSize, populationSize, mutationRate, crossoverRate, maxGenerations;
+    private int tournamentSize, populationSize, maxGenerations;
     private int maxCodons, minCodons;
+    private double mutationRate, crossoverRate;
 
     public GrammaticalEvolution(Random random, int maxCodons, int minCodons, int tournamentSize, int populationSize,
-                                    int mutationRate, int crossoverRate, int maxGenerations){
+                                    double mutationRate, double crossoverRate, int maxGenerations){
         this.population = new HashMap<Integer,Chromosome>();
         this.random = random;
         this.tournamentSize = tournamentSize;
@@ -25,6 +26,57 @@ public class GrammaticalEvolution {
     public void execute(){
         generateInitialPopulation();
 
+    }
+
+    /**
+     * This method creates a new population using the generational approach.
+     */
+    public void generateNewPopulation(){
+        Map<Integer, Chromosome> newPopulation = new HashMap<Integer,Chromosome>();
+        int numCrossoverIndividuals = (int) (this.crossoverRate * this.populationSize);
+        int numMutationIndividuals = this.populationSize - numCrossoverIndividuals;
+        int counter = 0;
+
+        while(newPopulation.size() != this.populationSize){
+            if(numCrossoverIndividuals > 0 && numMutationIndividuals > 0){
+                //randomly create an individual from mutation or crossover
+                if(this.random.nextInt(2) == 0){
+                    Chromosome parentOne = tournamentSelection();
+                    Chromosome parentTwo = tournamentSelection();
+
+                    parentTwo = parentOne.singlePointCrossover(parentTwo);
+                    newPopulation.put(counter++, parentOne);
+                    newPopulation.put(counter++, parentTwo);
+
+                    numCrossoverIndividuals -=2;
+                }
+                else{//perform mutation
+                    Chromosome parentOne = tournamentSelection();
+                    parentOne.mutate();
+                    newPopulation.put(counter++,parentOne);
+                    numMutationIndividuals--;
+                }
+            }
+            else if(numCrossoverIndividuals > 0){
+                Chromosome parentOne = tournamentSelection();
+                Chromosome parentTwo = tournamentSelection();
+
+                parentTwo = parentOne.singlePointCrossover(parentTwo);
+                newPopulation.put(counter++, parentOne);
+                newPopulation.put(counter++, parentTwo);
+
+                numCrossoverIndividuals -= 2;
+            }
+            else if(numMutationIndividuals > 0){
+                Chromosome parentOne = tournamentSelection();
+                parentOne.mutate();
+
+                newPopulation.put(counter++,parentOne);
+                numMutationIndividuals--;
+            }
+        }
+
+        this.population = newPopulation;
     }
 
     /**
@@ -43,7 +95,7 @@ public class GrammaticalEvolution {
 
     /**
      * Creates a tournament of size tournament_size and returns the individual with the best fitness
-     * @return Fittest individual
+     * @return Copy of the fittest individual
      */
     public Chromosome tournamentSelection(){
         List<Chromosome> tournament = new ArrayList<Chromosome>();
@@ -62,6 +114,6 @@ public class GrammaticalEvolution {
             }
         }
 
-        return bestIndividual;
+        return bestIndividual.copy();
     }
 }
