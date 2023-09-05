@@ -2,6 +2,7 @@ package GE;
 
 import java.util.Random;
 import java.util.List;
+import java.util.Map;
 import java.util.ArrayList;
 
 public class Chromosome {
@@ -11,6 +12,9 @@ public class Chromosome {
     private final Random random;
     private int[] fitness; //will hold the hard constraint cost at index 0 and the soft constraint cost at index 1
     private int numCodons;
+    private Node root;
+    private GrammarRules grammar;
+    private int codonCounter = 0;
 
     /**
      * Cosntructor
@@ -28,6 +32,8 @@ public class Chromosome {
         this.fitness[0] = Integer.MAX_VALUE; this.fitness[1] = Integer.MAX_VALUE;
 
         this.numCodons = numCodons;
+        this.root = null;
+        grammar = new GrammarRules();
 
         //Create the codons
         for(int i = 0;i < numCodons && flag; i++)
@@ -72,8 +78,39 @@ public class Chromosome {
      * Maps the chromosome to a derivation tree and then evaluates it
      */
     public void evaluateIndividual(){
-
+        this.root = generateDerivationTree("<start>");
         //TODO: have to update the fitness value when done here
+    }
+
+    /**
+     * Generates the derivation tree using the grammar
+     * @param symbol The current symbol in the grammar
+     * @return
+     */
+    public Node generateDerivationTree(String symbol){
+        if(!grammar.containsKey(symbol)){//create a terminal node
+            return new TerminalNode(symbol);
+        }
+
+        Map<Integer,List<String>> rhs = grammar.getRhs(symbol);
+        //select a rule based on the current codon
+
+        List<String> rule = rhs.get(getCodonValue());
+
+        Node node = new FunctionNode(symbol);
+        for(String r: rule){
+            Node n = generateDerivationTree(r);
+            node.children.add(n);
+        }
+
+        return node;
+
+    }
+
+    private int getCodonValue(){
+        int val = chromosome.get(codonCounter++).getDenaryValue();
+        codonCounter = (codonCounter == chromosome.size())? 0 : codonCounter;
+        return val;
     }
 
 

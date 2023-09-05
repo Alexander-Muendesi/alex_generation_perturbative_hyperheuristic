@@ -5,9 +5,11 @@ import java.util.List;
 
 public abstract class Node {
     protected List<Node> children;
+    protected String value = null;
 
-    public Node(){
-        children = new ArrayList<Node>();
+    public Node(String value){
+        this.children = new ArrayList<Node>();
+        this.value = value;
     }
 
     /**

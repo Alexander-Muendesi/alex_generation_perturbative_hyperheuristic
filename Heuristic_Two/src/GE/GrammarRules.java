@@ -202,4 +202,13 @@ public class GrammarRules {
     public Map<Integer,List<String>> getRhs(String key){
         return this.grammar.get(key);
     }
+
+    /**
+     * Checks to see whether the passed in input is a terminal or function node
+     * @param val
+     * @return
+     */
+    public boolean containsKey(String val){
+        return this.grammar.containsKey(val);
+    }
 }
