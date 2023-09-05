@@ -25,6 +25,19 @@ public class GrammaticalEvolution {
 
     public void execute(){
         generateInitialPopulation();
+        int numIterations = 0;
+        Chromosome bestIndividual = null;
+
+        while(numIterations < maxGenerations){
+            bestIndividual = evaluateFitness();
+
+            generateNewPopulation();
+            numIterations++;
+        }
+        bestIndividual.printFitness();
+    }
+
+    public Chromosome evaluateFitness(){
 
     }
 

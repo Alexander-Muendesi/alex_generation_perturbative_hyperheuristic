@@ -9,7 +9,7 @@ public class Chromosome {
     private final int maxCodons;
     private final int minCodons;
     private final Random random;
-    private double[] fitness; //will hold the hard constraint cost at index 0 and the soft constraint cost at index 1
+    private int[] fitness; //will hold the hard constraint cost at index 0 and the soft constraint cost at index 1
     private int numCodons;
 
     /**
@@ -24,7 +24,8 @@ public class Chromosome {
         this.minCodons = minCodons;
         this.random = random;
         this.chromosome = new ArrayList<Codon>();
-        this.fitness = new double[2];
+        this.fitness = new int[2];
+        this.fitness[0] = Integer.MAX_VALUE; this.fitness[1] = Integer.MAX_VALUE;
 
         this.numCodons = numCodons;
 
@@ -65,6 +66,14 @@ public class Chromosome {
         secondChromosome.numCodons = parentTwo.size();
 
         return secondChromosome;
+    }
+
+    /**
+     * Maps the chromosome to a derivation tree and then evaluates it
+     */
+    public void evaluateIndividual(){
+
+        //TODO: have to update the fitness value when done here
     }
 
 
@@ -111,8 +120,15 @@ public class Chromosome {
      * Getter method
      * @return hard + soft constraint cost
      */
-    public double getFitness(){
+    public int getFitness(){
         return this.fitness[0] + this.fitness[1];
+    }
+
+    /**
+     * Print the fitness values of a chromosome
+     */
+    public void printFitness(){
+        System.out.println("HC: " + " SC: " + this.fitness[0] + this.fitness[1]);
     }
 
 }
