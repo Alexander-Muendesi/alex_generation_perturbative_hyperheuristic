@@ -6,6 +6,7 @@ import java.util.List;
 public abstract class Node {
     protected List<Node> children;
     protected String value = null;
+    protected int level;//used for printing purposes
 
     public Node(String value){
         this.children = new ArrayList<Node>();
@@ -30,6 +31,31 @@ public abstract class Node {
 
     public int getSizeOfChildren(){
         return this.children.size();
+    }
+
+    /**
+     * 
+     * @param level
+     */
+    public void setLevel(int level){
+        this.level = level;
+    }
+
+    @Override
+    public String toString(){
+        StringBuilder sb = new StringBuilder();
+        for(int i=0; i<level; i++){
+            sb.append("\t");
+        }
+
+        sb.append(value).append("\n");
+
+        for(Node n: children){
+            n.level = this.level + 1;
+            sb.append(n.toString());
+        }
+
+        return sb.toString();
     }
     public abstract void execute();
 }

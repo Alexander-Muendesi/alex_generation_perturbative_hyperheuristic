@@ -79,6 +79,9 @@ public class Chromosome {
      */
     public void evaluateIndividual(){
         this.root = generateDerivationTree("<start>");
+        this.root.setLevel(0);
+
+        System.out.println(root.toString());
         //TODO: have to update the fitness value when done here
     }
 
@@ -95,7 +98,7 @@ public class Chromosome {
         Map<Integer,List<String>> rhs = grammar.getRhs(symbol);
         //select a rule based on the current codon
 
-        List<String> rule = rhs.get(getCodonValue());
+        List<String> rule = rhs.get(getCodonValue() % rhs.size());
 
         Node node = new FunctionNode(symbol);
         for(String r: rule){
