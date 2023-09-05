@@ -8,6 +8,7 @@ public class Codon {
 
     public Codon(Random random){
         this.random = random;
+        codon = new StringBuilder();
 
         //create a random 8 bits string
         for(int i = 0; i < 8; i++)
