@@ -84,19 +84,19 @@ public class GrammarRules {
         grammar.put("<h_value>", temp); temp = new HashMap<Integer,List<String>>();
 
         //<compSel>
-        vals.add("lowestCost");
+        vals.add("lowestCost"); vals.add("<comp>");
         temp.put(0,vals); vals = new ArrayList<String>();
 
-        vals.add("highestCost");
+        vals.add("highestCost"); vals.add("<comp>");
         temp.put(1, vals); vals = new ArrayList<String>();
 
-        vals.add("smallestSize");
+        vals.add("smallestSize"); vals.add("<comp>");
         temp.put(2, vals); vals = new ArrayList<String>();
 
-        vals.add("largestSize");
+        vals.add("largestSize"); vals.add("<comp>");
         temp.put(3, vals); vals = new ArrayList<String>();
 
-        vals.add("random");
+        vals.add("random"); vals.add("<comp>");
         temp.put(4, vals); vals = new ArrayList<String>();
 
         vals.add("if"); vals.add("<prob>"); vals.add("<compSel>"); vals.add("<compSel>");
@@ -136,7 +136,7 @@ public class GrammarRules {
         temp.put(2,vals); vals = new ArrayList<String>();
 
         vals.add(">=");
-        temp.put(3,vals);
+        temp.put(3,vals); vals = new ArrayList<String>();
 
         grammar.put("<rop>",temp); temp = new HashMap<Integer,List<String>>();
 
@@ -148,7 +148,7 @@ public class GrammarRules {
         temp.put(1, vals); vals = new ArrayList<String>();
 
         vals.add("75");
-        temp.put(2,vals);
+        temp.put(2,vals); vals = new ArrayList<String>();
 
         grammar.put("<prob>", temp); temp = new HashMap<Integer,List<String>>();
 
