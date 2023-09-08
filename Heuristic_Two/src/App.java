@@ -8,7 +8,14 @@ public class App {
         Random random = new Random(0);
         boolean flag = true;
 
-        Chromosome chromosome = new Chromosome(maxCodons, minCodons, random, flag, numCodons);
-        chromosome.evaluateIndividual();
+        // Chromosome chromosome = new Chromosome(maxCodons, minCodons, random, flag, numCodons);
+        // chromosome.evaluateIndividual();
+
+        for(int i=0; i< 1000; i++){
+            System.out.println("i: " + i);
+            Chromosome c = new Chromosome(maxCodons, minCodons, random, flag, numCodons);
+            c.evaluateIndividual();
+            System.out.println("____________________________________________________________________________________________________________");
+        }
     }
 }

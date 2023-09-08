@@ -187,9 +187,9 @@ public class GrammarRules {
         vals.add("<n>");
         temp.put(10, vals); vals = new ArrayList<String>();
 
-        vals.add("<n>");
-        vals.add("<n>");
-        temp.put(11, vals); vals = new ArrayList<String>();
+        // vals.add("<n>");
+        // vals.add("<n>");
+        // temp.put(11, vals); vals = new ArrayList<String>();
 
         grammar.put("<n>", temp); temp = new HashMap<Integer,List<String>>();
     }

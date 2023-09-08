@@ -49,7 +49,7 @@ public class GrammaticalEvolution {
         int numCrossoverIndividuals = (int) (this.crossoverRate * this.populationSize);
         int numMutationIndividuals = this.populationSize - numCrossoverIndividuals;
         int counter = 0;
-
+        //TODO: have to modify code such that you check whether the individuals derivation tree can be created without infinite recurion happening
         while(newPopulation.size() != this.populationSize){
             if(numCrossoverIndividuals > 0 && numMutationIndividuals > 0){
                 //randomly create an individual from mutation or crossover
@@ -101,8 +101,13 @@ public class GrammaticalEvolution {
         int codonsPerIndividual = minCodons;
 
         for(int i = 0; i < populationSize; i++ ){
-            this.population.put(i, new Chromosome(this.maxCodons, this.minCodons, this.random, true, codonsPerIndividual));
-            codonsPerIndividual = (codonsPerIndividual - minCodons + 1) % codonRange + minCodons;
+            Chromosome c = new Chromosome(this.maxCodons, this.minCodons, this.random, true, codonsPerIndividual);
+            if(c.evaluateIndividual()){
+                this.population.put(i, c);
+                codonsPerIndividual = (codonsPerIndividual - minCodons + 1) % codonRange + minCodons;
+            }
+            else
+                --i;
         }
     }
 

@@ -1,0 +1,6 @@
+1. Have to fill these values somehow in Chromosome:
+    public int  prevFitness = 0;
+    public int currFitness = 0;
+    public int diffFitness = 0;
+    public int currIteration = 0;
+    public int totalIterations = 0;

@@ -4,7 +4,7 @@ import java.util.Random;
 import java.util.List;
 import java.util.Map;
 import java.util.ArrayList;
-
+import constructor_classes.Solutions;
 public class Chromosome {
     private List<Codon> chromosome;
     private final int maxCodons;
@@ -15,6 +15,12 @@ public class Chromosome {
     private Node root;
     private GrammarRules grammar;
     private int codonCounter = 0;
+    int treeCounter = 0;
+    public int  prevFitness = 0;
+    public int currFitness = 1;
+    public int diffFitness = 2;
+    public int currIteration = 3;
+    public int totalIterations = 4;
 
     /**
      * Cosntructor
@@ -76,21 +82,211 @@ public class Chromosome {
 
     /**
      * Maps the chromosome to a derivation tree and then evaluates it
+     * @return true means the individual was successfully created, false means the individuals derivation tree resulted in infinite recursion
      */
-    public void evaluateIndividual(){
-        this.root = generateDerivationTree("<start>");
-        this.root.setLevel(0);
+    public boolean evaluateIndividual(){
+        treeCounter = 0;
+        try{
+            this.root = generateDerivationTree("<start>");
+            this.root.setLevel(0);
+        }
+        catch(Exception e){
+            return false;
+        }
+        
 
         System.out.println(root.toString());
+        System.out.println("\n\n" + evaluateDerivationTree(this.root));
         //TODO: have to update the fitness value when done here
+
+        return true;
+    }
+
+    /**
+     * This function applies the derivation tree to the to a timetable. Uses a depth first approach to evaluate the tree
+     * @param node
+     */
+    public String evaluateDerivationTree(Node node){
+        String val = node.getValue();
+
+        if(val.equals("if")){//DONE
+            return "";//this will never have any children so just return empty string for now
+        }     
+        else if(node instanceof TerminalNode){
+            if(node.getValue().equals("prevFitness"))
+                return String.valueOf(this.prevFitness);
+            else if(node.getValue().equals("currFitness"))
+                return String.valueOf(this.currFitness);
+            else if(node.getValue().equals("currIteration"))
+                return String.valueOf(this.currIteration);
+            else if(node.getValue().equals("totalIterations"))
+                return String.valueOf(this.totalIterations);
+            else if(node.getValue().equals("diffFitness"))
+                return String.valueOf(this.diffFitness);
+
+            return node.getValue();
+        }
+        else if(val.equals("<accept>")){
+            return evaluateDerivationTree(node.getChildren().get(0));
+        }
+        else if(val.equals("<heuristic>")){//DONE
+            List<String> vals = new ArrayList<String>();
+
+            for(Node n: node.getChildren())
+                vals.add(evaluateDerivationTree(n));
+
+            if(vals.get(0).equals("")){//means the if statement was chosen
+                if(vals.get(1).equals("TRUE")){
+                    return vals.get(2);
+                }
+                else if(vals.get(1).equals("FALSE")){
+                    return vals.get(3);
+                }
+            }
+            else{//anything but the if statement was chosen
+                StringBuilder sb = new StringBuilder();
+                int counter = 0;
+
+                for(String v: vals){
+                    if(counter < vals.size()-1)
+                        sb.append(v).append(" ");
+                    else
+                        sb.append(v);
+
+                    counter++;
+                }
+                return sb.toString();
+            }
+        }
+        else if(val.equals("<cond>")){//DONE
+            List<String> cond = new ArrayList<String>();
+            int ifCounter = 0;
+
+            for(Node n : node.getChildren()){
+                cond.add(evaluateDerivationTree(n));
+            }
+
+            if(cond.get(ifCounter).equals(""))
+                ifCounter++;
+
+            if(cond.get(ifCounter).equals("<=")){
+                int lhs = Integer.parseInt(cond.get(ifCounter + 1));
+                int rhs = Integer.parseInt(cond.get(ifCounter + 2));
+
+                return (lhs <= rhs) ? "TRUE" : "FALSE";
+            }
+            else if(cond.get(ifCounter).equals("<")){
+                int lhs = Integer.parseInt(cond.get(ifCounter + 1));
+                int rhs = Integer.parseInt(cond.get(ifCounter + 2));
+
+                return (lhs < rhs) ? "TRUE" : "FALSE";
+            }
+            else if(cond.get(ifCounter).equals(">")){
+                int lhs = Integer.parseInt(cond.get(ifCounter + 1));
+                int rhs = Integer.parseInt(cond.get(ifCounter + 2));
+
+                return (lhs > rhs) ? "TRUE" : "FALSE";
+            }
+            else if(cond.get(ifCounter).equals(">=")){
+                int lhs = Integer.parseInt(cond.get(ifCounter + 1));
+                int rhs = Integer.parseInt(cond.get(ifCounter + 2));
+
+                return (lhs >= rhs) ? "TRUE" : "FALSE";
+            }
+            else if(cond.get(ifCounter).equals("TRUE") || cond.get(ifCounter).equals("FALSE"))
+                return cond.get(ifCounter);
+            else{
+                System.out.println("Error in cond, evaluate derivation tree. Value: ");
+                System.exit(-1);
+                return "";
+            }
+        }
+        else if(val.equals("<compSel>")){//DONE
+            List<String> vals = new ArrayList<String>();
+            for(Node n: node.getChildren()){
+                vals.add(evaluateDerivationTree(n));
+            }
+
+            if(vals.size() == 2){
+                return vals.get(0) + " " + vals.get(1);
+            }
+            else if(vals.get(0).equals("")){
+                int probability = Integer.parseInt(vals.get(1));
+
+                if(random.nextInt(101) >= probability)
+                    return vals.get(2);
+                else
+                    return vals.get(3);
+            }
+            else{
+                System.out.println("error in compsel, evaluate derivation tree");
+                System.exit(-1);
+                return "";
+            }
+        }
+        else if(val.equals("<prob>")){//DONE
+            return evaluateDerivationTree(node.getChildren().get(0));
+        }
+        else if(val.equals("<h_value>")){//DONE
+            return evaluateDerivationTree(node.getChildren().get(0));
+        }
+        else if(val.equals("<comp>")){//DONE
+            return evaluateDerivationTree(node.getChildren().get(0));
+        }
+        else if(val.equals("<cop>")){//DONE
+            return evaluateDerivationTree(node.getChildren().get(0));
+        }
+        else if(val.equals("<rop>")){//DONE
+            return evaluateDerivationTree(node.getChildren().get(0));
+        }
+        else if(val.equals("<n>")){//DONE
+            if(node.getChildren().size() == 1){//only one child so a number between 1 and 10
+                return evaluateDerivationTree(node.getChildren().get(0));
+            }
+            else{
+                StringBuilder sb = new StringBuilder();
+
+                for(Node n: node.getChildren())
+                    sb.append(evaluateDerivationTree(n));
+
+                return sb.toString();
+            }
+        }
+        // else if(val.equals("<start>")){
+        else{
+            List<String> vals = new ArrayList<String>();
+            for(Node n: node.getChildren())
+                vals.add(evaluateDerivationTree(n));
+
+            int counter = 0;
+            StringBuilder result = new StringBuilder();
+            for(String elem: vals){
+                if(counter == vals.size() -1){
+                    result.append(elem);
+                }
+                else 
+                    result.append(elem).append(" ");
+
+                counter++;
+            }
+            return result.toString();
+        }   
+
+        System.out.println("This line should never be reached");
+        return "";
     }
 
     /**
      * Generates the derivation tree using the grammar
      * @param symbol The current symbol in the grammar
      * @return
+     * @throws Exception
      */
-    public Node generateDerivationTree(String symbol){
+    public Node generateDerivationTree(String symbol) throws Exception{
+        if(treeCounter > 10000){//this will prevent a stackoverflow should the recursion just keep going
+            throw new Exception("Recursion did not terminate when generating the derivation tree");
+        }
+        treeCounter++;
         if(!grammar.containsKey(symbol)){//create a terminal node
             return new TerminalNode(symbol);
         }

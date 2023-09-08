@@ -57,5 +57,9 @@ public abstract class Node {
 
         return sb.toString();
     }
+
+    String getValue(){
+        return this.value;
+    }
     public abstract void execute();
 }
