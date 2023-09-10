@@ -419,7 +419,6 @@ public class Constraints {
      * @return an array containing the indexes of the lowest cost lectures
      */
     public List<Integer> findLowestCostLecture(int numComponentsInvolved, String []timetable){
-
         //so basically if you encounter a lecture with the same id which has smaller cost replace it
         Map<String, Integer> costs = new HashMap<String, Integer>();
         Map<String, List<Integer>> costsLocations = new HashMap<String, List<Integer>>();
@@ -474,7 +473,88 @@ public class Constraints {
         //sort the map in ascending order
         List<Map.Entry<String,Integer>> list = new ArrayList<>(costs.entrySet());
         list.sort(Map.Entry.comparingByValue());//sort the list based on values in ascending order
-        Map<String,Integer> sortedMap = new LinkedHashMap<>();
+
+        List<Integer> result = new ArrayList<Integer>();
+        int counter = 0;
+
+        for(Map.Entry<String, Integer> entry : list){
+            List<Integer> temp = costsLocations.get(entry.getKey());
+
+            for(int val : temp){
+                result.add(val);
+                counter++;
+
+                if(counter >= numComponentsInvolved)
+                    break;
+            }
+
+            if(counter >= numComponentsInvolved)
+                break;
+            
+        }
+
+        return result;
+    }
+
+    /**
+     * @param numComponentsInvolved
+     * @param timetable
+     */
+    public List<Integer> findHighestCostLecture(int numComponentsInvolved, String []timetable){
+        Map<String, Integer> costs = new HashMap<String, Integer>();
+        Map<String, List<Integer>> costsLocations = new HashMap<String, List<Integer>>();
+
+        int day = 0,period = 0, roomIndex = 0;
+
+        for(int i=0;i<timetable.length;i++){
+            if(timetable[i] != null){
+                int cost = 0;
+                //calculating costs 
+                //can potentially only add the following hard constraint costs as well 1. lecture allocations 2. Conflicts
+                cost += roomCapacityConstraintCost(timetable[i], roomIndex);
+
+
+                if(!costs.containsKey(timetable[i])){
+                    List<Integer> temp = new ArrayList<Integer>();
+                    costs.put(timetable[i],cost);
+
+                    temp = new ArrayList<Integer>();
+                    temp.add(i);
+                    costsLocations.put(timetable[i], temp);
+                }
+                else{
+                    int tempCost = costs.get(timetable[i]);
+                    if(cost < tempCost){//replace current data with new lowest for lecture
+                        List<Integer> t = new ArrayList<Integer>();
+                        costs.put(timetable[i],cost);
+
+                        t.add(i);
+                        costsLocations.put(timetable[i], t);
+                    }
+                    else if(cost == tempCost){//store location of equal lecture
+                        List<Integer> t = costsLocations.get(timetable[i]);
+                        t.add(i);
+                        costsLocations.put(timetable[i], t);
+                    }
+                }
+
+            }
+
+            roomIndex++;
+            if(roomIndex >= reader.numRooms){
+                roomIndex = 0;
+                period++;
+            }
+            if(period >= reader.periodsPerDay){
+                period = 0;
+                day++;
+            }
+        }
+
+        //sort the map in descending order
+        List<Map.Entry<String,Integer>> list = new ArrayList<>(costs.entrySet());
+        list.sort(Map.Entry.<String, Integer>comparingByValue().reversed());
+
 
         List<Integer> result = new ArrayList<Integer>();
         int counter = 0;
