@@ -6,18 +6,22 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 import data_classes.Constraint;
 import data_classes.Course;
 import data_classes.Curriculum;
 import data_classes.DataReader;
+import data_classes.Room;
 
 public class Constraints {
     private final DataReader reader;
+    private final Random random;
 
-    public Constraints(DataReader reader){
+    public Constraints(DataReader reader, Random random){
         this.reader = reader;
+        this.random = random;
     }
 
     //hard constraints start here
@@ -413,7 +417,7 @@ public class Constraints {
     }
 
     /**
-     * This method finds the "numComponentsInvolved" lowest cost lectures
+     * This method finds the "numComponentsInvolved" lowest cost lectures. Cost defined in terms of room capacity constraint cost
      * @param numComponentsInvolved 
      * @param timetable
      * @return an array containing the indexes of the lowest cost lectures
@@ -524,7 +528,7 @@ public class Constraints {
                 }
                 else{
                     int tempCost = costs.get(timetable[i]);
-                    if(cost < tempCost){//replace current data with new lowest for lecture
+                    if(cost > tempCost){//replace current data with new highest for lecture
                         List<Integer> t = new ArrayList<Integer>();
                         costs.put(timetable[i],cost);
 
@@ -578,6 +582,12 @@ public class Constraints {
         return result;
     }
 
+    /**
+     * Cost defined in terms of room capacity constraint
+     * @param numComponentsInvolved
+     * @param timetable
+     * @return
+     */
     public List<Integer> findLowestCostRoom(int numComponentsInvolved, String[] timetable){
         Map<String, Integer> costs = new HashMap<String, Integer>();
         Map<String, List<Integer>> costsLocations = new HashMap<String, List<Integer>>();
@@ -597,7 +607,7 @@ public class Constraints {
                 }
                 else{
                     int tempCost = costs.get(timetable[i]);
-                    if(cost < tempCost){//replace current data with new lowest for lecture
+                    if(cost < tempCost){//replace current data with new lowest for room
                         List<Integer> t = new ArrayList<Integer>();
                         costs.put(timetable[i],cost);
 
@@ -668,7 +678,7 @@ public class Constraints {
                 }
                 else{
                     int tempCost = costs.get(timetable[i]);
-                    if(cost < tempCost){//replace current data with new lowest for lecture
+                    if(cost > tempCost){//replace current data with new highest for room
                         List<Integer> t = new ArrayList<Integer>();
                         costs.put(timetable[i],cost);
 
@@ -716,6 +726,570 @@ public class Constraints {
             if(counter >= numComponentsInvolved)
                 break;
             
+        }
+
+        return result;
+    }
+
+    /**
+     * cost defined in terms of room capacity costraint cost
+     * @param numComponentsInvolved
+     * @param timetable
+     * @return
+     */
+    public List<Integer> findLowestCostPeriod(int numComponentsInvolved, String[] timetable){
+        Map<String, Integer> costs = new HashMap<String, Integer>();
+        Map<String, List<Integer>> costsLocations = new HashMap<String, List<Integer>>();
+
+        int day = 0,period = 0, roomIndex = 0;
+
+        for(int i=0; i<timetable.length; i++){
+            if(timetable[i] != null){
+                int cost = roomCapacityConstraintCost(timetable[i], roomIndex);
+                if(!costs.containsKey(timetable[i])){
+                    List<Integer> temp = new ArrayList<Integer>();
+                    costs.put(timetable[i],cost);
+
+                    temp = new ArrayList<Integer>();
+                    temp.add(i);
+                    costsLocations.put(timetable[i], temp);
+                }
+                else{
+                    int tempCost = costs.get(timetable[i]);
+                    if(cost < tempCost){//replace current data with new lowest for lecture
+                        List<Integer> t = new ArrayList<Integer>();
+                        costs.put(timetable[i],cost);
+
+                        t.add(i);
+                        costsLocations.put(timetable[i], t);
+                    }
+                    else if(cost == tempCost){//store location of equal lecture
+                        List<Integer> t = costsLocations.get(timetable[i]);
+                        t.add(i);
+                        costsLocations.put(timetable[i], t);
+                    }
+                }
+            }
+
+            roomIndex++;
+            if(roomIndex >= reader.numRooms){
+                roomIndex = 0;
+                period++;
+            }
+            if(period >= reader.periodsPerDay){
+                period = 0;
+                day++;
+            }
+        }
+
+        //sort the map in ascending order
+        List<Map.Entry<String,Integer>> list = new ArrayList<>(costs.entrySet());
+        list.sort(Map.Entry.comparingByValue());//sort the list based on values in ascending order
+
+        List<Integer> result = new ArrayList<Integer>();
+        int counter = 0;
+
+        for(Map.Entry<String, Integer> entry : list){
+            List<Integer> temp = costsLocations.get(entry.getKey());
+
+            for(int val : temp){
+                result.add(val);
+                counter++;
+
+                if(counter >= numComponentsInvolved)
+                    break;
+            }
+
+            if(counter >= numComponentsInvolved)
+                break;
+            
+        }
+
+        return result;
+    }
+
+    public List<Integer> findHighestCostPeriod(int numComponentsInvolved, String[] timetable){
+        Map<String, Integer> costs = new HashMap<String, Integer>();
+        Map<String, List<Integer>> costsLocations = new HashMap<String, List<Integer>>();
+
+        int day = 0,period = 0, roomIndex = 0;
+
+        for(int i=0; i<timetable.length; i++){
+            if(timetable[i] != null){
+                int cost = roomCapacityConstraintCost(timetable[i], roomIndex);
+                if(!costs.containsKey(timetable[i])){
+                    List<Integer> temp = new ArrayList<Integer>();
+                    costs.put(timetable[i],cost);
+
+                    temp = new ArrayList<Integer>();
+                    temp.add(i);
+                    costsLocations.put(timetable[i], temp);
+                }
+                else{
+                    int tempCost = costs.get(timetable[i]);
+                    if(cost > tempCost){//replace current data with new lowest for lecture
+                        List<Integer> t = new ArrayList<Integer>();
+                        costs.put(timetable[i],cost);
+
+                        t.add(i);
+                        costsLocations.put(timetable[i], t);
+                    }
+                    else if(cost == tempCost){//store location of equal lecture
+                        List<Integer> t = costsLocations.get(timetable[i]);
+                        t.add(i);
+                        costsLocations.put(timetable[i], t);
+                    }
+                }
+            }
+
+            roomIndex++;
+            if(roomIndex >= reader.numRooms){
+                roomIndex = 0;
+                period++;
+            }
+            if(period >= reader.periodsPerDay){
+                period = 0;
+                day++;
+            }
+        }
+
+        //sort the map in descending order
+        List<Map.Entry<String,Integer>> list = new ArrayList<>(costs.entrySet());
+        list.sort(Map.Entry.<String, Integer>comparingByValue().reversed());
+
+
+        List<Integer> result = new ArrayList<Integer>();
+        int counter = 0;
+
+        for(Map.Entry<String, Integer> entry : list){
+            List<Integer> temp = costsLocations.get(entry.getKey());
+
+            for(int val : temp){
+                result.add(val);
+                counter++;
+
+                if(counter >= numComponentsInvolved)
+                    break;
+            }
+
+            if(counter >= numComponentsInvolved)
+                break;
+            
+        }
+
+        return result;
+    }
+
+    /**
+     * Cost defined as the number of students taking the lecture
+     */
+    public List<Integer> findLowestSizeLecture(int numComponentsInvolved, String[] timetable){
+        Map<String, Integer> costs = new HashMap<String, Integer>();
+        Map<String, List<Integer>> costsLocations = new HashMap<String, List<Integer>>();
+        int day = 0,period = 0, roomIndex = 0;
+
+        for(int i=0; i<timetable.length;i++){
+            if(timetable[i] != null){
+                Course c = reader.coursesMap.get(timetable[i]);
+                int cost = c.numStudentsEnrolled;
+
+                if(!costs.containsKey(timetable[i])){
+                    List<Integer> temp = new ArrayList<Integer>();
+                    costs.put(timetable[i],cost);
+
+                    temp = new ArrayList<Integer>();
+                    temp.add(i);
+                    costsLocations.put(timetable[i], temp);
+                }
+                else{
+                    int tempCost = costs.get(timetable[i]);
+                    if(cost < tempCost){//replace current data with new lowest for lecture
+                        List<Integer> t = new ArrayList<Integer>();
+                        costs.put(timetable[i],cost);
+
+                        t.add(i);
+                        costsLocations.put(timetable[i], t);
+                    }
+                    else if(cost == tempCost){//store location of equal lecture
+                        List<Integer> t = costsLocations.get(timetable[i]);
+                        t.add(i);
+                        costsLocations.put(timetable[i], t);
+                    }
+                }
+            }
+
+            roomIndex++;
+            if(roomIndex >= reader.numRooms){
+                roomIndex = 0;
+                period++;
+            }
+            if(period >= reader.periodsPerDay){
+                period = 0;
+                day++;
+            }
+        }
+
+        //sort the map in ascending order
+        List<Map.Entry<String,Integer>> list = new ArrayList<>(costs.entrySet());
+        list.sort(Map.Entry.comparingByValue());//sort the list based on values in ascending order
+
+        List<Integer> result = new ArrayList<Integer>();
+        int counter = 0;
+
+        for(Map.Entry<String, Integer> entry : list){
+            List<Integer> temp = costsLocations.get(entry.getKey());
+
+            for(int val : temp){
+                result.add(val);
+                counter++;
+
+                if(counter >= numComponentsInvolved)
+                    break;
+            }
+
+            if(counter >= numComponentsInvolved)
+                break;
+            
+        }
+
+        return result;
+    }
+
+    public List<Integer> findHighestSizeLecture(int numComponentsInvolved, String[] timetable){
+        Map<String, Integer> costs = new HashMap<String, Integer>();
+        Map<String, List<Integer>> costsLocations = new HashMap<String, List<Integer>>();
+        int day = 0,period = 0, roomIndex = 0;
+
+        for(int i=0; i<timetable.length;i++){
+            if(timetable[i] != null){
+                Course c = reader.coursesMap.get(timetable[i]);
+                int cost = c.numStudentsEnrolled;
+
+                if(!costs.containsKey(timetable[i])){
+                    List<Integer> temp = new ArrayList<Integer>();
+                    costs.put(timetable[i],cost);
+
+                    temp = new ArrayList<Integer>();
+                    temp.add(i);
+                    costsLocations.put(timetable[i], temp);
+                }
+                else{
+                    int tempCost = costs.get(timetable[i]);
+                    if(cost > tempCost){//replace current data with new lowest for lecture
+                        List<Integer> t = new ArrayList<Integer>();
+                        costs.put(timetable[i],cost);
+
+                        t.add(i);
+                        costsLocations.put(timetable[i], t);
+                    }
+                    else if(cost == tempCost){//store location of equal lecture
+                        List<Integer> t = costsLocations.get(timetable[i]);
+                        t.add(i);
+                        costsLocations.put(timetable[i], t);
+                    }
+                }
+            }
+
+            roomIndex++;
+            if(roomIndex >= reader.numRooms){
+                roomIndex = 0;
+                period++;
+            }
+            if(period >= reader.periodsPerDay){
+                period = 0;
+                day++;
+            }
+        }
+
+        //sort the map in descending order
+        List<Map.Entry<String,Integer>> list = new ArrayList<>(costs.entrySet());
+        list.sort(Map.Entry.<String, Integer>comparingByValue().reversed());
+
+
+        List<Integer> result = new ArrayList<Integer>();
+        int counter = 0;
+
+        for(Map.Entry<String, Integer> entry : list){
+            List<Integer> temp = costsLocations.get(entry.getKey());
+
+            for(int val : temp){
+                result.add(val);
+                counter++;
+
+                if(counter >= numComponentsInvolved)
+                    break;
+            }
+
+            if(counter >= numComponentsInvolved)
+                break;
+            
+        }
+
+        return result;
+    }
+
+    /**
+     * Cost defined in terms of the room capacity
+     * @param numComponentsInvolved
+     * @param timetable
+     * @return
+     */
+    public List<Integer> findLowestSizeRoom(int numComponentsInvolved, String[] timetable){
+        Map<String, Integer> costs = new HashMap<String, Integer>();
+        Map<String, List<Integer>> costsLocations = new HashMap<String, List<Integer>>();
+        int day = 0,period = 0, roomIndex = 0;
+
+        for(int i=0; i< timetable.length; i++){
+            if(timetable[i] != null){
+                Room r = reader.rooms.get(roomIndex);
+                int cost = r.capacity;
+
+                if(!costs.containsKey(timetable[i])){
+                    List<Integer> temp = new ArrayList<Integer>();
+                    costs.put(timetable[i],cost);
+
+                    temp = new ArrayList<Integer>();
+                    temp.add(i);
+                    costsLocations.put(timetable[i], temp);
+                }
+                else{
+                    int tempCost = costs.get(timetable[i]);
+                    if(cost < tempCost){//replace current data with new lowest for lecture
+                        List<Integer> t = new ArrayList<Integer>();
+                        costs.put(timetable[i],cost);
+
+                        t.add(i);
+                        costsLocations.put(timetable[i], t);
+                    }
+                    else if(cost == tempCost){//store location of equal lecture
+                        List<Integer> t = costsLocations.get(timetable[i]);
+                        t.add(i);
+                        costsLocations.put(timetable[i], t);
+                    }
+                }
+            }
+            roomIndex++;
+            if(roomIndex >= reader.numRooms){
+                roomIndex = 0;
+                period++;
+            }
+            if(period >= reader.periodsPerDay){
+                period = 0;
+                day++;
+            }
+        }
+
+        //sort the map in ascending order
+        List<Map.Entry<String,Integer>> list = new ArrayList<>(costs.entrySet());
+        list.sort(Map.Entry.comparingByValue());//sort the list based on values in ascending order
+
+        List<Integer> result = new ArrayList<Integer>();
+        int counter = 0;
+
+        for(Map.Entry<String, Integer> entry : list){
+            List<Integer> temp = costsLocations.get(entry.getKey());
+
+            for(int val : temp){
+                result.add(val);
+                counter++;
+
+                if(counter >= numComponentsInvolved)
+                    break;
+            }
+
+            if(counter >= numComponentsInvolved)
+                break;
+            
+        }
+
+        return result;
+    }
+
+    public List<Integer> findHighestSizeRoom(int numComponentsInvolved, String[] timetable){
+        Map<String, Integer> costs = new HashMap<String, Integer>();
+        Map<String, List<Integer>> costsLocations = new HashMap<String, List<Integer>>();
+        int day = 0,period = 0, roomIndex = 0;
+
+        for(int i=0; i< timetable.length; i++){
+            if(timetable[i] != null){
+                Room r = reader.rooms.get(roomIndex);
+                int cost = r.capacity;
+
+                if(!costs.containsKey(timetable[i])){
+                    List<Integer> temp = new ArrayList<Integer>();
+                    costs.put(timetable[i],cost);
+
+                    temp = new ArrayList<Integer>();
+                    temp.add(i);
+                    costsLocations.put(timetable[i], temp);
+                }
+                else{
+                    int tempCost = costs.get(timetable[i]);
+                    if(cost > tempCost){//replace current data with new lowest for lecture
+                        List<Integer> t = new ArrayList<Integer>();
+                        costs.put(timetable[i],cost);
+
+                        t.add(i);
+                        costsLocations.put(timetable[i], t);
+                    }
+                    else if(cost == tempCost){//store location of equal lecture
+                        List<Integer> t = costsLocations.get(timetable[i]);
+                        t.add(i);
+                        costsLocations.put(timetable[i], t);
+                    }
+                }
+            }
+            roomIndex++;
+            if(roomIndex >= reader.numRooms){
+                roomIndex = 0;
+                period++;
+            }
+            if(period >= reader.periodsPerDay){
+                period = 0;
+                day++;
+            }
+        }
+
+        //sort the map in descending order
+        List<Map.Entry<String,Integer>> list = new ArrayList<>(costs.entrySet());
+        list.sort(Map.Entry.<String, Integer>comparingByValue().reversed());
+
+
+        List<Integer> result = new ArrayList<Integer>();
+        int counter = 0;
+
+        for(Map.Entry<String, Integer> entry : list){
+            List<Integer> temp = costsLocations.get(entry.getKey());
+
+            for(int val : temp){
+                result.add(val);
+                counter++;
+
+                if(counter >= numComponentsInvolved)
+                    break;
+            }
+
+            if(counter >= numComponentsInvolved)
+                break;
+            
+        }
+
+        return result;
+    }
+
+    /**
+     * Defined as the number of lectures scheduled in the period
+     * @param numComponentsInvolved
+     * @param timetable
+     * @return
+     */
+    public List<Integer> findLowestSizePeriod(int numComponentsInvolved, String[] timetable){
+        Map<Integer, Integer> periodCosts = new HashMap<Integer, Integer>();
+        Map<Integer, List<Integer>> periodLocations = new HashMap<Integer, List<Integer>>();
+
+        int day = 0,period = 0, roomIndex = 0;
+
+        for(int i=0; i<timetable.length;i++){
+            if(timetable[i] != null){
+                if(!periodCosts.containsKey(period)){
+                    periodCosts.put(period,1);
+                    List<Integer> temp = new ArrayList<Integer>();
+                    temp.add(i);
+                    periodLocations.put(period,temp);
+                }
+                else{
+                    periodCosts.put(period, periodCosts.get(period) +1);
+                    List<Integer> temp = periodLocations.get(period);
+                    temp.add(i);
+                    periodLocations.put(period,temp);
+                }
+            }
+
+            roomIndex++;
+            if(roomIndex >= reader.numRooms){
+                roomIndex = 0;
+                period++;
+            }
+            if(period >= reader.periodsPerDay){
+                period = 0;
+                day++;
+            }
+        }
+
+        //sort the map in ascending order
+        List<Map.Entry<Integer,Integer>> list = new ArrayList<>(periodCosts.entrySet());
+        list.sort(Map.Entry.comparingByValue());
+
+        List<Integer> result = new ArrayList<Integer>();
+        int counter = 0;
+
+        for(Map.Entry<Integer, Integer> entry : list){
+            List<Integer> temp = periodLocations.get(entry.getKey());
+            while(temp.isEmpty() == false && counter < numComponentsInvolved){
+                int index = random.nextInt(temp.size());
+                result.add(index);
+                temp.remove(index);
+                counter++;
+            }
+
+            if(counter >= numComponentsInvolved)
+                break;
+        }
+
+        return result;
+
+    }
+
+    public List<Integer> findHighestSizePeriod(int numComponentsInvolved, String[] timetable){
+        Map<Integer, Integer> periodCosts = new HashMap<Integer, Integer>();
+        Map<Integer, List<Integer>> periodLocations = new HashMap<Integer, List<Integer>>();
+        int day = 0,period = 0, roomIndex = 0;
+
+        for(int i=0; i<timetable.length;i++){
+            if(timetable[i] != null){
+                if(!periodCosts.containsKey(period)){
+                    periodCosts.put(period,1);
+                    List<Integer> temp = new ArrayList<Integer>();
+                    temp.add(i);
+                    periodLocations.put(period,temp);
+                }
+                else{
+                    periodCosts.put(period, periodCosts.get(period) +1);
+                    List<Integer> temp = periodLocations.get(period);
+                    temp.add(i);
+                    periodLocations.put(period,temp);
+                }
+            }
+
+            roomIndex++;
+            if(roomIndex >= reader.numRooms){
+                roomIndex = 0;
+                period++;
+            }
+            if(period >= reader.periodsPerDay){
+                period = 0;
+                day++;
+            }
+        }
+
+        //sort in descending order
+        List<Map.Entry<Integer,Integer>> list = new ArrayList<>(periodCosts.entrySet());
+        list.sort(Map.Entry.<Integer, Integer>comparingByValue().reversed());
+
+        List<Integer> result = new ArrayList<Integer>();
+        int counter = 0;
+
+        for(Map.Entry<Integer, Integer> entry : list){
+            List<Integer> temp = periodLocations.get(entry.getKey());
+            while(temp.isEmpty() == false && counter < numComponentsInvolved){
+                int index = random.nextInt(temp.size());
+                result.add(index);
+                temp.remove(index);
+                counter++;
+            }
+
+            if(counter >= numComponentsInvolved)
+                break;
         }
 
         return result;
