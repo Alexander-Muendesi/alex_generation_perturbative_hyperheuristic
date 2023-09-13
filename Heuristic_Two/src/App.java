@@ -10,13 +10,13 @@ public class App {
     public static void main(String[] args) throws Exception {
         Random random = new Random(0);
         DataReader dataReader = new DataReader(1);
-        int maxCodons = 20;
+        int maxCodons = 30;
         int minCodons = 2;
         int tournamentSize = 4;
         int populationSize = 50;
-        double mutationRate = 0.5;
-        double crossoverRate = 0.5;
-        int maxGenerations = 100;
+        double mutationRate = 0.8;
+        double crossoverRate = 0.2;
+        int maxGenerations = 2000;
 
         GrammaticalEvolution ge = new GrammaticalEvolution(random, maxCodons, minCodons, tournamentSize, populationSize, mutationRate, crossoverRate, maxGenerations, dataReader);
         ge.execute();            

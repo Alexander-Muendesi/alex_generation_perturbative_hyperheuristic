@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
 
+import GE.GrammaticalEvolution;
 import data_classes.Constraint;
 import data_classes.Course;
 import data_classes.Curriculum;

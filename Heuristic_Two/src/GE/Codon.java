@@ -38,6 +38,11 @@ public class Codon {
         return new Codon(this);
     }
 
+    @Override
+    public String toString(){
+        return this.codon.toString();
+    }
+
     /**
      * Convert the binary string to a denary value
      * @return denary value of binary string

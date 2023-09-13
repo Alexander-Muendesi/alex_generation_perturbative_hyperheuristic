@@ -20,7 +20,8 @@ public class Timetable {
     private final DataReader reader;
     private final Constraints constraints;
     private final Random random;
-    private List<String> deletedCourses; //keeps track of courses that were deleted
+    public List<String> deletedCourses; //keeps track of courses that were deleted
+    public int []fitnessArray;
 
     //TOOD: might have to add a copy method for the timetable class so that we keep track of the deletedCourses!!
 
@@ -58,6 +59,7 @@ public class Timetable {
         // fitness = hardConstraintCost + softConstraintCost;
         int []arr = {hardConstraintCost,softConstraintCost}; 
 
+        this.fitnessArray = arr;
         this.fitness = hardConstraintCost + softConstraintCost;
         return arr;
     }
@@ -84,7 +86,7 @@ public class Timetable {
                 conflictsConstraintCost += constraints.conflictsConstraintCost(timetable, day, period, c);
         }
 
-        return conflictsConstraintCost + teacherConstraintCost + constraints.lectureConstraintCost(timetable);
+        return conflictsConstraintCost + teacherConstraintCost + deletedCourses.size();
     }
 
     /**

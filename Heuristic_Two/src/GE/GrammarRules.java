@@ -36,23 +36,23 @@ public class GrammarRules {
         vals.add("move"); vals.add("<n>"); vals.add("<compSel>");
         temp.put(1, vals); vals = new ArrayList<String>();
 
-        vals.add("add"); vals.add("<n>"); vals.add("<compSel>");
-        temp.put(2,vals); vals = new ArrayList<String>();
+        // vals.add("add"); vals.add("<n>"); vals.add("<compSel>");
+        // temp.put(2,vals); vals = new ArrayList<String>();
 
-        vals.add("delete"); vals.add("<n>"); vals.add("<compSel>");
-        temp.put(3,vals); vals = new ArrayList<String>();
+        // vals.add("delete"); vals.add("<n>"); vals.add("<compSel>");
+        // temp.put(3,vals); vals = new ArrayList<String>();
 
         vals.add("shuffle"); vals.add("<n>"); vals.add("<compSel>");
-        temp.put(4, vals); vals = new ArrayList<String>();
+        temp.put(2, vals); vals = new ArrayList<String>();
 
         vals.add("<heuristic>"); vals.add("<cop>"); vals.add("<heuristic>");
-        temp.put(5, vals); vals = new ArrayList<String>();
+        temp.put(3, vals); vals = new ArrayList<String>();
 
         vals.add("<heuristic>");
-        temp.put(6, vals); vals = new ArrayList<String>();
+        temp.put(4, vals); vals = new ArrayList<String>();
 
         vals.add("if"); vals.add("<cond>"); vals.add("<heuristic>"); vals.add("<heuristic>");
-        temp.put(7,vals); vals = new ArrayList<String>();
+        temp.put(5,vals); vals = new ArrayList<String>();
 
         grammar.put("<heuristic>", temp); temp = new HashMap<Integer,List<String>>();
 

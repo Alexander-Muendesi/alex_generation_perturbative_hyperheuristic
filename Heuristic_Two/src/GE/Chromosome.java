@@ -14,7 +14,7 @@ public class Chromosome {
     private final int maxCodons;
     private final int minCodons;
     private final Random random;
-    private int[] fitness; //will hold the hard constraint cost at index 0 and the soft constraint cost at index 1
+    public int[] fitness; //will hold the hard constraint cost at index 0 and the soft constraint cost at index 1
     private int numCodons;
     private Node root;
     private GrammarRules grammar;
@@ -27,8 +27,9 @@ public class Chromosome {
     public int currIteration = 0;
     public int totalIterations = 4;
 
-    private Timetable timetable;
+    public Timetable timetable;
     private Timetable copyTimetable;
+    public String programRepresantation = null;
 
     /**
      * Cosntructor
@@ -121,6 +122,9 @@ public class Chromosome {
         // System.out.println(root.toString());
         String program = evaluateDerivationTree(this.root);
         // System.out.println(program);
+        // if(GrammaticalEvolution.numIterations == 14)
+        //     System.out.println(program);
+        programRepresantation = program;
 
         String[] p = program.split(" ");
     
@@ -161,17 +165,24 @@ public class Chromosome {
         int[] fitT = timetable.calculateFitness();
         // System.out.println("New: " + fitT[0] + " " + fitT[1]);
 
-        if(IO && timetable.fitness > copyTimetable.fitness){//reject the new solution that was created if its not equal or improving
+        // if(IO && timetable.fitness > copyTimetable.fitness){//reject the new solution that was created if its not equal or improving
+        if(IO && timetable.fitnessArray[0] > copyTimetable.fitnessArray[0]){//reject the new solution that was created if its not equal or improving
             timetable = copyTimetable;//keep the original timetable
             prevFitness = copyTimetable.fitness;
             currFitness = timetable.fitness;
             this.fitness = fitCopy;
             return;
         }
+
         //if its AM then the move has already been accepted since we are modify the original timetable
         prevFitness = copyTimetable.fitness;
         currFitness = timetable.fitness;
         this.fitness = fitT;
+
+
+
+        // if(GrammaticalEvolution.numIterations == 14)
+        //     System.out.println("The end");
     }
 
     /**
@@ -250,56 +261,66 @@ public class Chromosome {
                 else if(operator.equals("rGradient")){//applies one heuristic till there is no improvement then applies the other one till there is not improvement
                     int []currFitness = timetable.calculateFitness();
                     int []prevFitness = null;
+                    int counter = 0;//used to make sure program does eventually terminate incause it keeps applying heuristic
 
                     List<String> temp = heuristicsMap.get(i);
                     if(temp.get(0).equals("swap")){
-                        while(true){
+                        while(true && counter < 10000){
                             prevFitness = currFitness;
                             timetable.applySwapOperator(temp.get(1), temp.get(2), temp.get(3)); 
                             currFitness = timetable.calculateFitness();
                             
                             if(prevFitness[0] + prevFitness[1] == currFitness[0] + currFitness[1])//no longer an improvement in the fitness
                                 break;
+                            counter++;
                         }
                     }
                     else if(temp.get(0).equals("move")){
-                        while(true){
+                        while(true && counter < 10000){
                             prevFitness = currFitness;
                             timetable.applyMoveOperator(temp.get(1), temp.get(2), temp.get(3));
                             currFitness = timetable.calculateFitness();
     
                             if(prevFitness[0] + prevFitness[1] == currFitness[0] + currFitness[1])//no longer an improvement in the fitness
                                     break;
+
+                            counter++;
                         }
                     }
                     else if(temp.get(0).equals("add")){
-                        while(true){
+                        while(true && counter < 10000){
                             prevFitness = currFitness;
                             timetable.applyAddOperator(temp.get(1), temp.get(2), temp.get(3));
                             currFitness = timetable.calculateFitness();
 
                             if(prevFitness[0] + prevFitness[1] == currFitness[0] + currFitness[1])//no longer an improvement in the fitness
                                     break;
+
+                            counter++;
                         }
                     }
                     else if(temp.get(0).equals("delete")){
-                        while(true){
+                        while(true && counter < 10000){
                             prevFitness = currFitness;
                             timetable.applyDeleteOperator(temp.get(1), temp.get(2), temp.get(3));
                             currFitness = timetable.calculateFitness();
 
                             if(prevFitness[0] + prevFitness[1] == currFitness[0] + currFitness[1])//no longer an improvement in the fitness
                                     break;
+
+                            counter++;
                         }
                     }
                     else if(temp.get(0).equals("shuffle")){
-                        while(true){
+                        while(true && counter < 10000){
                             prevFitness = currFitness;
                             timetable.applyShuffleOperator(temp.get(1), temp.get(2), temp.get(3));
                             currFitness = timetable.calculateFitness();
 
                             if(prevFitness[0] + prevFitness[1] == currFitness[0] + currFitness[1])//no longer an improvement in the fitness
                                     break;
+
+                            counter++;
                         }
                     }
                     else{
@@ -313,53 +334,63 @@ public class Chromosome {
                     temp = heuristicsMap.get(++i);
 
                     if(temp.get(0).equals("swap")){
-                        while(true){
+                        while(true && counter < 10000){
                             prevFitness = currFitness;
                             timetable.applySwapOperator(temp.get(1), temp.get(2), temp.get(3)); 
                             currFitness = timetable.calculateFitness();
                             
                             if(prevFitness[0] + prevFitness[1] == currFitness[0] + currFitness[1])//no longer an improvement in the fitness
                                 break;
+
+                            counter++;
                         }
                     }
                     else if(temp.get(0).equals("move")){
-                        while(true){
+                        while(true && counter < 10000){
                             prevFitness = currFitness;
                             timetable.applyMoveOperator(temp.get(1), temp.get(2), temp.get(3));
                             currFitness = timetable.calculateFitness();
     
                             if(prevFitness[0] + prevFitness[1] == currFitness[0] + currFitness[1])//no longer an improvement in the fitness
                                     break;
+
+                            counter++;
                         }
                     }
                     else if(temp.get(0).equals("add")){
-                        while(true){
+                        while(true && counter < 10000){
                             prevFitness = currFitness;
                             timetable.applyAddOperator(temp.get(1), temp.get(2), temp.get(3));
                             currFitness = timetable.calculateFitness();
 
                             if(prevFitness[0] + prevFitness[1] == currFitness[0] + currFitness[1])//no longer an improvement in the fitness
                                     break;
+
+                            counter++;
                         }
                     }
                     else if(temp.get(0).equals("delete")){
-                        while(true){
+                        while(true && counter < 10000){
                             prevFitness = currFitness;
                             timetable.applyDeleteOperator(temp.get(1), temp.get(2), temp.get(3));
                             currFitness = timetable.calculateFitness();
 
                             if(prevFitness[0] + prevFitness[1] == currFitness[0] + currFitness[1])//no longer an improvement in the fitness
                                     break;
+
+                            counter++;
                         }
                     }
                     else if(temp.get(0).equals("shuffle")){
-                        while(true){
+                        while(true && counter < 10000){
                             prevFitness = currFitness;
                             timetable.applyShuffleOperator(temp.get(1), temp.get(2), temp.get(3));
                             currFitness = timetable.calculateFitness();
 
                             if(prevFitness[0] + prevFitness[1] == currFitness[0] + currFitness[1])//no longer an improvement in the fitness
                                     break;
+
+                            counter++;
                         }
                     }
                     else{
@@ -558,7 +589,7 @@ public class Chromosome {
      * @throws Exception
      */
     public Node generateDerivationTree(String symbol) throws Exception{
-        if(treeCounter > 10000){//this will prevent a stackoverflow should the recursion just keep going
+        if(treeCounter > 1000){//this will prevent a stackoverflow should the recursion just keep going
             throw new Exception("Recursion did not terminate when generating the derivation tree");
         }
         treeCounter++;
@@ -646,6 +677,15 @@ public class Chromosome {
      */
     public void printFitness(){
         System.out.println("HC: "+ this.fitness[0] + " SC: " +  + this.fitness[1]);
+    }
+
+    public void printChromosome(){
+        String result = "";
+
+        for(Codon c : chromosome)
+            result += c.toString();
+
+        System.out.println(result);
     }
 
 }
