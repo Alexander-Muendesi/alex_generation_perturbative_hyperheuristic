@@ -20,6 +20,9 @@ public class Timetable {
     private final DataReader reader;
     private final Constraints constraints;
     private final Random random;
+    private List<String> deletedCourses; //keeps track of courses that were deleted
+
+    //TOOD: might have to add a copy method for the timetable class so that we keep track of the deletedCourses!!
 
     public Timetable(String[] timetable, DataReader reader, Random random){
         this.timetable = getTimetableCopy(timetable);
@@ -29,6 +32,7 @@ public class Timetable {
         softConstraintCost = Integer.MAX_VALUE;
         this.reader = reader;
         this.constraints = new Constraints(reader, random);
+        this.deletedCourses = new ArrayList<String>();
     }
 
     /**
@@ -177,7 +181,7 @@ public class Timetable {
             }
         }
         else{
-            System.out.println("Error in applySwapOperator");
+            System.out.println("Error in applySwapOperator in Timetable.java");
             System.exit(-1);
         }
 
@@ -203,6 +207,12 @@ public class Timetable {
         }
     }
 
+    /**
+     * 
+     * @param n
+     * @param compSel
+     * @param comp
+     */
     public void applyMoveOperator(String n, String compSel, String comp){
         int numComponentsInvolved = Integer.parseInt(n);
         List<Integer> result = new ArrayList<Integer>();
@@ -263,7 +273,7 @@ public class Timetable {
             }
         }
         else{
-            System.out.println("Error in applyMove operator");
+            System.out.println("Error in applyMove operator in Timetable.java");
             System.exit(-1);
         }
 
@@ -277,5 +287,184 @@ public class Timetable {
             timetable[randomIndex] = temp;
         }
         
+    }
+
+    /**
+     * 
+     * @param n
+     * @param compSel
+     * @param comp
+     */
+    public void applyAddOperator(String n, String compSel, String comp){
+        if(deletedCourses.isEmpty())
+            return;
+
+        int numComponentsInvolved = Integer.parseInt(n);
+        
+        for(int i=0; i < numComponentsInvolved && !deletedCourses.isEmpty(); i++){
+            int randomCourseIndex = random.nextInt(deletedCourses.size());
+            String course = deletedCourses.get(randomCourseIndex);
+
+            int timetableIndex = random.nextInt(timetable.length);
+            while(timetable[timetableIndex] != null)
+                timetableIndex = random.nextInt(timetable.length);
+
+            timetable[timetableIndex] = course;
+        }
+
+
+    }
+
+    /**
+     * 
+     * @param n
+     * @param compSel
+     * @param comp
+     */
+    public void applyDeleteOperator(String n, String compSel, String comp){
+        int numComponentsInvolved = Integer.parseInt(n);
+
+        List<Integer> result = new ArrayList<Integer>();
+
+        if(compSel.equals("lowestCost")){
+            if(comp.equals("lecture")){
+                result = constraints.findLowestCostLecture(numComponentsInvolved, timetable);
+            }
+            else if(comp.equals("period")){
+                result = constraints.findLowestCostPeriod(numComponentsInvolved, timetable);
+            }
+            else if(comp.equals("room")){
+                result = constraints.findHighestCostPeriod(numComponentsInvolved, timetable);
+            }
+        }
+        else if(compSel.equals("highestCost")){
+            if(comp.equals("lecture")){
+                result = constraints.findHighestCostLecture(numComponentsInvolved,timetable);
+            }
+            else if(comp.equals("period")){
+                result = constraints.findHighestCostPeriod(numComponentsInvolved, timetable); 
+            }
+            else if(comp.equals("room")){
+                result = constraints.findHighestCostRoom(numComponentsInvolved, timetable);
+            }
+        }
+        else if(compSel.equals("smallestSize")){
+            if(comp.equals("lecture")){
+                result = constraints.findLowestSizeLecture(numComponentsInvolved, timetable);
+            }
+            else if(comp.equals("period")){
+                result = constraints.findLowestCostPeriod(numComponentsInvolved, timetable);
+            }
+            else if(comp.equals("room")){
+                result = constraints.findLowestCostRoom(numComponentsInvolved, timetable);
+            }
+        }
+        else if(compSel.equals("largestSize")){
+            if(comp.equals("lecture")){
+                result = constraints.findHighestSizeLecture(numComponentsInvolved, timetable);
+            }
+            else if(comp.equals("period")){
+                result  = constraints.findHighestSizePeriod(numComponentsInvolved, timetable);
+            }
+            else if(comp.equals("room")){
+                result = constraints.findHighestSizeRoom(numComponentsInvolved, timetable);
+            }
+        }
+        else if(compSel.equals("random")){
+            if(comp.equals("lecture")){
+                result = constraints.findRandom(numComponentsInvolved, timetable);
+            }
+            else if(comp.equals("period")){
+                result = constraints.findRandom(numComponentsInvolved, timetable);
+            }
+            else if(comp.equals("room")){
+                result = constraints.findRandom(numComponentsInvolved, timetable);
+            }
+        }
+        else{
+            System.out.println("Error in applyDelete operator in Timetable.java");
+            System.exit(-1);
+        }
+
+        for(int i=0; i<result.size(); i++){
+            int index = result.get(i);
+
+            if(timetable[index] != null){
+                deletedCourses.add(timetable[index]);
+                timetable[index] = null;
+            }
+        }
+    }
+
+    public void applyShuffleOperator(String n, String compSel, String comp){
+        int numComponentsInvolved = Integer.parseInt(n);
+        List<Integer> result = new ArrayList<Integer>();
+
+        if(compSel.equals("lowestCost")){
+            if(comp.equals("lecture")){
+                result = constraints.findLowestCostLecture(numComponentsInvolved, timetable);
+            }
+            else if(comp.equals("period")){
+                result = constraints.findLowestCostPeriod(numComponentsInvolved, timetable);
+            }
+            else if(comp.equals("room")){
+                result = constraints.findHighestCostPeriod(numComponentsInvolved, timetable);
+            }
+        }
+        else if(compSel.equals("highestCost")){
+            if(comp.equals("lecture")){
+                result = constraints.findHighestCostLecture(numComponentsInvolved,timetable);
+            }
+            else if(comp.equals("period")){
+                result = constraints.findHighestCostPeriod(numComponentsInvolved, timetable); 
+            }
+            else if(comp.equals("room")){
+                result = constraints.findHighestCostRoom(numComponentsInvolved, timetable);
+            }
+        }
+        else if(compSel.equals("smallestSize")){
+            if(comp.equals("lecture")){
+                result = constraints.findLowestSizeLecture(numComponentsInvolved, timetable);
+            }
+            else if(comp.equals("period")){
+                result = constraints.findLowestCostPeriod(numComponentsInvolved, timetable);
+            }
+            else if(comp.equals("room")){
+                result = constraints.findLowestCostRoom(numComponentsInvolved, timetable);
+            }
+        }
+        else if(compSel.equals("largestSize")){
+            if(comp.equals("lecture")){
+                result = constraints.findHighestSizeLecture(numComponentsInvolved, timetable);
+            }
+            else if(comp.equals("period")){
+                result  = constraints.findHighestSizePeriod(numComponentsInvolved, timetable);
+            }
+            else if(comp.equals("room")){
+                result = constraints.findHighestSizeRoom(numComponentsInvolved, timetable);
+            }
+        }
+        else if(compSel.equals("random")){
+            if(comp.equals("lecture")){
+                result = constraints.findRandom(numComponentsInvolved, timetable);
+            }
+            else if(comp.equals("period")){
+                result = constraints.findRandom(numComponentsInvolved, timetable);
+            }
+            else if(comp.equals("room")){
+                result = constraints.findRandom(numComponentsInvolved, timetable);
+            }
+        }
+        else{
+            System.out.println("Error in applyShuffle operator in Timetable.java");
+            System.exit(-1);
+        }
+
+        for(int i=result.size() -1; i>0;i--){
+            int j = random.nextInt(i+1);
+            String temp = timetable[result.get(i)];
+            timetable[result.get(i)] = timetable[result.get(j)];
+            timetable[result.get(j)] = temp;
+        }
     }
 }
