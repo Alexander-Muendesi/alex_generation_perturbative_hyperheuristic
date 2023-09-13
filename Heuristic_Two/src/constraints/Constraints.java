@@ -49,6 +49,35 @@ public class Constraints {
     }
 
     /**
+     * This method calculates the lecture constraint cost. Each lecture not scheduled for a course is worth one point
+     * @param timetable
+     * @return cost
+     */
+    public int lectureConstraintCost(String[] timetable){
+        Map<String,Integer> costs = new HashMap<String,Integer>();
+
+        for(int i=0;i<timetable.length;i++){
+            if(timetable[i] != null){
+                if(!costs.containsKey(timetable[1])){
+                    costs.put(timetable[i], 1);
+                }
+                else
+                    costs.put(timetable[i],costs.get(timetable[i]+1));
+            }
+        }
+
+        int cost = 0;
+        for(Map.Entry<String,Integer> entry : costs.entrySet()){
+            Course c = reader.coursesMap.get(entry.getKey());
+            int numLectures = entry.getValue();
+
+            cost += Math.abs(c.numLectures-numLectures);
+        }
+
+        return cost;
+    }
+
+    /**
      * Each room must only be scheduled once in a period.
      * @param timetable
      * @param day
@@ -144,6 +173,8 @@ public class Constraints {
 
         return true;//curriculum does not have a course assigned in this period
     }
+
+    
 
     /**
      * This method calculates the cost of this hard constraint being violated.
