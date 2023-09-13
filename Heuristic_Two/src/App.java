@@ -8,10 +8,11 @@ import data_classes.DataReader;
 
 public class App {
     public static void main(String[] args) throws Exception {
+        //TODO: the major problem with add and delete is that the delete operator is monopolizing the chromosomes and deleting most elements
         Random random = new Random(0);
         DataReader dataReader = new DataReader(1);
         int maxCodons = 30;
-        int minCodons = 2;
+        int minCodons = 5;
         int tournamentSize = 4;
         int populationSize = 50;
         double mutationRate = 0.8;
