@@ -1294,4 +1294,19 @@ public class Constraints {
 
         return result;
     }
+
+    /**
+     * Randomly select a solution component
+     */
+    public List<Integer> findRandom(int nummComponentsInvolved, String[] timetable){
+        List<Integer> result = new ArrayList<Integer>();
+
+        while(result.size() < nummComponentsInvolved){
+            int index = random.nextInt(timetable.length);
+            if(timetable[index] != null)
+                result.add(index);
+        }
+
+        return result;
+    }
 }
