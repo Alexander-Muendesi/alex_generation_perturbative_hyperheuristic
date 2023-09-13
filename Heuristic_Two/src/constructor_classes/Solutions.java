@@ -22,7 +22,7 @@ public class Solutions {
     public Solutions(DataReader reader, Random random){
         this.reader = reader;
         this.random = random;
-        this.constraints = new Constraints(reader);
+        this.constraints = new Constraints(reader,random);
         timetable = new String[reader.numDays*reader.periodsPerDay*reader.rooms.size()];
         initializeTimetable();
     }

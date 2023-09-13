@@ -58,11 +58,12 @@ public class Constraints {
 
         for(int i=0;i<timetable.length;i++){
             if(timetable[i] != null){
-                if(!costs.containsKey(timetable[1])){
+                if(!costs.containsKey(timetable[i])){
                     costs.put(timetable[i], 1);
                 }
-                else
-                    costs.put(timetable[i],costs.get(timetable[i]+1));
+                else{
+                    costs.put(timetable[i],costs.get(timetable[i])+1);
+                }
             }
         }
 

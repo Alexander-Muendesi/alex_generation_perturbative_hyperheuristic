@@ -14,7 +14,7 @@ public class DataReader {
     public List<Room> rooms;
     public List<Curriculum> curricula;
     public List<Constraint> constraints;
-    public String filename = "Hyperheuristic_One/data/comp";
+    public String filename = "Heuristic_Two/data/comp";
     public int filenumber = 0;
 
     /**

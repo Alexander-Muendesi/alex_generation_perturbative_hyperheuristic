@@ -20,13 +20,15 @@ public class Chromosome {
     private GrammarRules grammar;
     private int codonCounter = 0;
     int treeCounter = 0;
-    public int  prevFitness = 0;
-    public int currFitness = 1;
+
+    public int  prevFitness = -1;
+    public int currFitness = -1;
     public int diffFitness = 2;
-    public int currIteration = 3;
+    public int currIteration = 0;
     public int totalIterations = 4;
 
     private Timetable timetable;
+    private Timetable copyTimetable;
 
     /**
      * Cosntructor
@@ -54,6 +56,7 @@ public class Chromosome {
             chromosome.add(new Codon(random));
 
         this.timetable = timetable;
+        this.copyTimetable = timetable.copy();
     }
 
     /**
@@ -90,25 +93,34 @@ public class Chromosome {
         return secondChromosome;
     }
 
-    /**
-     * Maps the chromosome to a derivation tree and then evaluates it
-     * @return true means the individual was successfully created, false means the individuals derivation tree resulted in infinite recursion
-     */
-    private Boolean IO = false;
-    private Boolean AM = false;
-    public boolean evaluateIndividual(){
+    public Node getRoot(){
+        return this.root;
+    }
+
+    public boolean partiallyEvaluateIndividual(){
         treeCounter = 0;
         try{
             this.root = generateDerivationTree("<start>");
             this.root.setLevel(0);
+            return true;
         }
         catch(Exception e){
             return false;
         }
-        
+    }
 
-        System.out.println(root.toString());
+    /**
+     * Maps the chromosome to a derivation tree and then evaluates it
+     * @return true means the individual was successfully created, false means the individuals derivation tree resulted in infinite recursion
+     */
+    public void evaluateIndividual(){
+        treeCounter = 0;
+        Boolean IO = false;
+        Boolean AM = false;
+
+        // System.out.println(root.toString());
         String program = evaluateDerivationTree(this.root);
+        // System.out.println(program);
 
         String[] p = program.split(" ");
     
@@ -142,18 +154,34 @@ public class Chromosome {
         heuristicsMap.put(heuristicCounter, temp);
 
         executeHeuristics(heuristicsMap, copMap);
-        //TODO: have to update the fitness value when done here
 
-        return true;
+        int[] fitCopy = copyTimetable.calculateFitness();
+        // System.out.println("OG: " + fitCopy[0] + " " + fitCopy[1]);
+        
+        int[] fitT = timetable.calculateFitness();
+        // System.out.println("New: " + fitT[0] + " " + fitT[1]);
+
+        if(IO && timetable.fitness > copyTimetable.fitness){//reject the new solution that was created if its not equal or improving
+            timetable = copyTimetable;//keep the original timetable
+            prevFitness = copyTimetable.fitness;
+            currFitness = timetable.fitness;
+            this.fitness = fitCopy;
+            return;
+        }
+        //if its AM then the move has already been accepted since we are modify the original timetable
+        prevFitness = copyTimetable.fitness;
+        currFitness = timetable.fitness;
+        this.fitness = fitT;
     }
 
     /**
      * This methods executes the heuristics derived from the chromosome on the timetable
      * @param heuristicsMap
      * @param copMap
-     * @return fitness of the solution after all the heuristics are applied
      */
-    public int executeHeuristics(Map<Integer, List<String>> heuristicsMap, Map<Integer,String> copMap){
+    public void executeHeuristics(Map<Integer, List<String>> heuristicsMap, Map<Integer,String> copMap){
+        copyTimetable = timetable.copy();
+
         if(copMap.size() == 0){//means there are no combination operators in the individual
             List<String> temp = heuristicsMap.get(0);
 
@@ -574,6 +602,12 @@ public class Chromosome {
      */
     public Chromosome copy(){
         Chromosome copy = new Chromosome(this.maxCodons, this.minCodons, this.random, false, this.numCodons, this.timetable.copy());
+        copy.currFitness = this.currFitness;
+        copy.prevFitness = this.prevFitness;
+        copy.currIteration = this.currIteration;
+        copy.diffFitness = this.diffFitness;
+        copy.fitness = this.fitness;
+        copy.totalIterations = this.totalIterations;
 
         for(Codon c: chromosome)
             copy.chromosome.add(c.getCopy());
@@ -611,7 +645,7 @@ public class Chromosome {
      * Print the fitness values of a chromosome
      */
     public void printFitness(){
-        System.out.println("HC: " + " SC: " + this.fitness[0] + this.fitness[1]);
+        System.out.println("HC: "+ this.fitness[0] + " SC: " +  + this.fitness[1]);
     }
 
 }

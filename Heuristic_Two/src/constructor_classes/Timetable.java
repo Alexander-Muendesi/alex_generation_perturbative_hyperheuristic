@@ -14,7 +14,7 @@ import data_classes.DataReader;
 
 public class Timetable {
     private String[] timetable;
-    private int fitness;
+    public int fitness;
     private int hardConstraintCost;
     private int softConstraintCost;
     private final DataReader reader;
@@ -41,6 +41,9 @@ public class Timetable {
         List<String> dCourses = new ArrayList<String>(this.deletedCourses);
 
         t.deletedCourses = dCourses;
+        t.fitness = this.fitness;
+        t.hardConstraintCost = this.hardConstraintCost;
+        t.softConstraintCost = this.softConstraintCost;
 
         return t;
     }
@@ -54,6 +57,8 @@ public class Timetable {
         softConstraintCost = calculateSoftConstraintCost();
         // fitness = hardConstraintCost + softConstraintCost;
         int []arr = {hardConstraintCost,softConstraintCost}; 
+
+        this.fitness = hardConstraintCost + softConstraintCost;
         return arr;
     }
 
@@ -79,7 +84,7 @@ public class Timetable {
                 conflictsConstraintCost += constraints.conflictsConstraintCost(timetable, day, period, c);
         }
 
-        return conflictsConstraintCost + teacherConstraintCost;
+        return conflictsConstraintCost + teacherConstraintCost + constraints.lectureConstraintCost(timetable);
     }
 
     /**
