@@ -211,13 +211,17 @@ public class GrammaticalEvolution {
                 tournament.add(temp);
                 // bestIndividual = (temp.getFitness() < bestIndividual.getFitness()) ? temp : bestIndividual;
 
-                // if(temp.fitness[0] < bestIndividual.fitness[0] && temp.fitness[1] < bestIndividual.fitness[1])
-                //     bestIndividual = temp;
-                // else if(temp.fitness[0] < bestIndividual.fitness[0])
-                //     bestIndividual = temp;
+                if(random.nextInt(2) == 0){//try and balance between favouring lower hard constraint and lower soft constraints
+                    if(temp.fitness[0] < bestIndividual.fitness[0] && temp.fitness[1] < bestIndividual.fitness[1])
+                        bestIndividual = temp;
+                    else if(temp.fitness[0] < bestIndividual.fitness[0])
+                        bestIndividual = temp;
+                }
+                else{
+                    if(temp.fitness[0] + temp.fitness[1] < bestIndividual.fitness[0] + bestIndividual.fitness[1])
+                        bestIndividual = temp;
+                }
 
-                if(temp.fitness[0] + temp.fitness[1] < bestIndividual.fitness[0] + bestIndividual.fitness[1])
-                    bestIndividual = temp;
                 
                 
             }
