@@ -4,7 +4,11 @@ import java.util.Random;
 import java.util.List;
 import java.util.Map;
 import java.util.ArrayList;
+import java.util.HashMap;
+
 import constructor_classes.Solutions;
+import constructor_classes.Timetable;
+
 public class Chromosome {
     private List<Codon> chromosome;
     private final int maxCodons;
@@ -22,14 +26,18 @@ public class Chromosome {
     public int currIteration = 3;
     public int totalIterations = 4;
 
+    private Timetable timetable;
+
     /**
      * Cosntructor
      * @param maxCodons
      * @param minCodons
      * @param random
      * @param flag True means execute the loop, false means skip the loop and its for deep copy thingy
+     * @param numCodons The number of codons for the chromosome
+     * @param timetable copy of timetable
      */
-    public Chromosome(int maxCodons, int minCodons, Random random, boolean flag, int numCodons){
+    public Chromosome(int maxCodons, int minCodons, Random random, boolean flag, int numCodons, Timetable timetable){
         this.maxCodons = maxCodons;
         this.minCodons = minCodons;
         this.random = random;
@@ -44,6 +52,8 @@ public class Chromosome {
         //Create the codons
         for(int i = 0;i < numCodons && flag; i++)
             chromosome.add(new Codon(random));
+
+        this.timetable = timetable;
     }
 
     /**
@@ -84,6 +94,8 @@ public class Chromosome {
      * Maps the chromosome to a derivation tree and then evaluates it
      * @return true means the individual was successfully created, false means the individuals derivation tree resulted in infinite recursion
      */
+    private Boolean IO = false;
+    private Boolean AM = false;
     public boolean evaluateIndividual(){
         treeCounter = 0;
         try{
@@ -96,10 +108,245 @@ public class Chromosome {
         
 
         System.out.println(root.toString());
-        System.out.println("\n\n" + evaluateDerivationTree(this.root));
+        String program = evaluateDerivationTree(this.root);
+
+        String[] p = program.split(" ");
+    
+        int heuristicCounter = 0;
+        int copCounter = 0;
+
+        Map<Integer, List<String>> heuristicsMap = new HashMap<Integer, List<String>>();
+        Map<Integer, String> copMap = new HashMap<Integer,String>();
+
+        List<String> temp = new ArrayList<String>();
+        
+        for(int i = 0; i < p.length; i++){
+            if(p[i].equals("IO"))
+                IO = true;
+            else if(p[i].equals("AM"))
+                AM = true;
+            else if(p[i].equals("union")){
+                copMap.put(copCounter++, p[i]);
+                heuristicsMap.put(heuristicCounter++,temp);
+                temp = new ArrayList<String>();
+            }
+            else if(p[i].equals("rGradient")){
+                copMap.put(copCounter++, p[i]);
+                heuristicsMap.put(heuristicCounter++, temp);
+                temp = new ArrayList<String>();
+            }
+            else
+                temp.add(p[i]);
+        }
+
+        heuristicsMap.put(heuristicCounter, temp);
+
+        executeHeuristics(heuristicsMap, copMap);
         //TODO: have to update the fitness value when done here
 
         return true;
+    }
+
+    /**
+     * This methods executes the heuristics derived from the chromosome on the timetable
+     * @param heuristicsMap
+     * @param copMap
+     * @return fitness of the solution after all the heuristics are applied
+     */
+    public int executeHeuristics(Map<Integer, List<String>> heuristicsMap, Map<Integer,String> copMap){
+        if(copMap.size() == 0){//means there are no combination operators in the individual
+            List<String> temp = heuristicsMap.get(0);
+
+            if(temp.get(0).equals("swap")){
+                timetable.applySwapOperator(temp.get(1), temp.get(2), temp.get(3));
+            }
+            else if(temp.get(0).equals("move"))
+                timetable.applyMoveOperator(temp.get(1), temp.get(2), temp.get(3));
+            else if(temp.get(0).equals("add"))
+                timetable.applyAddOperator(temp.get(1), temp.get(2), temp.get(3));
+            else if(temp.get(0).equals("delete"))
+                timetable.applyDeleteOperator(temp.get(1), temp.get(2), temp.get(3));
+            else if(temp.get(0).equals("shuffle"))
+                timetable.applyShuffleOperator(temp.get(1), temp.get(2), temp.get(3));
+            else{
+                System.out.println("Error in executeHeuristic Chromosome.java");
+                System.exit(-1);
+            }
+
+        }
+        else{//combination operators present
+            for(int i=0; i<copMap.size();i++){
+                String operator = copMap.get(i);
+
+                if(operator.equals("union")){//applies first heuristic then the second one
+                    List<String> temp = heuristicsMap.get(i);
+
+                    if(temp.get(0).equals("swap")){
+                        timetable.applySwapOperator(temp.get(1), temp.get(2), temp.get(3));
+                    }
+                    else if(temp.get(0).equals("move"))
+                        timetable.applyMoveOperator(temp.get(1), temp.get(2), temp.get(3));
+                    else if(temp.get(0).equals("add"))
+                        timetable.applyAddOperator(temp.get(1), temp.get(2), temp.get(3));
+                    else if(temp.get(0).equals("delete"))
+                        timetable.applyDeleteOperator(temp.get(1), temp.get(2), temp.get(3));
+                    else if(temp.get(0).equals("shuffle"))
+                        timetable.applyShuffleOperator(temp.get(1), temp.get(2), temp.get(3));
+                    else{
+                        System.out.println("Error in executeHeuristic Chromosome.java  in loop if1");
+                        System.exit(-1);
+                    }
+
+                    if(i+1 >= copMap.size())//ensure valid indexes are being accessed only
+                        break;
+
+                    temp = heuristicsMap.get(++i);
+
+                    if(temp.get(0).equals("swap")){
+                        timetable.applySwapOperator(temp.get(1), temp.get(2), temp.get(3));
+                    }
+                    else if(temp.get(0).equals("move"))
+                        timetable.applyMoveOperator(temp.get(1), temp.get(2), temp.get(3));
+                    else if(temp.get(0).equals("add"))
+                        timetable.applyAddOperator(temp.get(1), temp.get(2), temp.get(3));
+                    else if(temp.get(0).equals("delete"))
+                        timetable.applyDeleteOperator(temp.get(1), temp.get(2), temp.get(3));
+                    else if(temp.get(0).equals("shuffle"))
+                        timetable.applyShuffleOperator(temp.get(1), temp.get(2), temp.get(3));
+                    else{
+                        System.out.println("Error in executeHeuristic Chromosome.java  in loop if2");
+                        System.exit(-1);
+                    }
+            
+                }
+                else if(operator.equals("rGradient")){//applies one heuristic till there is no improvement then applies the other one till there is not improvement
+                    int []currFitness = timetable.calculateFitness();
+                    int []prevFitness = null;
+
+                    List<String> temp = heuristicsMap.get(i);
+                    if(temp.get(0).equals("swap")){
+                        while(true){
+                            prevFitness = currFitness;
+                            timetable.applySwapOperator(temp.get(1), temp.get(2), temp.get(3)); 
+                            currFitness = timetable.calculateFitness();
+                            
+                            if(prevFitness[0] + prevFitness[1] == currFitness[0] + currFitness[1])//no longer an improvement in the fitness
+                                break;
+                        }
+                    }
+                    else if(temp.get(0).equals("move")){
+                        while(true){
+                            prevFitness = currFitness;
+                            timetable.applyMoveOperator(temp.get(1), temp.get(2), temp.get(3));
+                            currFitness = timetable.calculateFitness();
+    
+                            if(prevFitness[0] + prevFitness[1] == currFitness[0] + currFitness[1])//no longer an improvement in the fitness
+                                    break;
+                        }
+                    }
+                    else if(temp.get(0).equals("add")){
+                        while(true){
+                            prevFitness = currFitness;
+                            timetable.applyAddOperator(temp.get(1), temp.get(2), temp.get(3));
+                            currFitness = timetable.calculateFitness();
+
+                            if(prevFitness[0] + prevFitness[1] == currFitness[0] + currFitness[1])//no longer an improvement in the fitness
+                                    break;
+                        }
+                    }
+                    else if(temp.get(0).equals("delete")){
+                        while(true){
+                            prevFitness = currFitness;
+                            timetable.applyDeleteOperator(temp.get(1), temp.get(2), temp.get(3));
+                            currFitness = timetable.calculateFitness();
+
+                            if(prevFitness[0] + prevFitness[1] == currFitness[0] + currFitness[1])//no longer an improvement in the fitness
+                                    break;
+                        }
+                    }
+                    else if(temp.get(0).equals("shuffle")){
+                        while(true){
+                            prevFitness = currFitness;
+                            timetable.applyShuffleOperator(temp.get(1), temp.get(2), temp.get(3));
+                            currFitness = timetable.calculateFitness();
+
+                            if(prevFitness[0] + prevFitness[1] == currFitness[0] + currFitness[1])//no longer an improvement in the fitness
+                                    break;
+                        }
+                    }
+                    else{
+                        System.out.println("Error in executeHeuristic Chromosome.java  in loop else if");
+                        System.exit(-1);
+                    }
+
+                    if(i+1 >= copMap.size())//ensure only valid indexes are being used
+                        break;
+
+                    temp = heuristicsMap.get(++i);
+
+                    if(temp.get(0).equals("swap")){
+                        while(true){
+                            prevFitness = currFitness;
+                            timetable.applySwapOperator(temp.get(1), temp.get(2), temp.get(3)); 
+                            currFitness = timetable.calculateFitness();
+                            
+                            if(prevFitness[0] + prevFitness[1] == currFitness[0] + currFitness[1])//no longer an improvement in the fitness
+                                break;
+                        }
+                    }
+                    else if(temp.get(0).equals("move")){
+                        while(true){
+                            prevFitness = currFitness;
+                            timetable.applyMoveOperator(temp.get(1), temp.get(2), temp.get(3));
+                            currFitness = timetable.calculateFitness();
+    
+                            if(prevFitness[0] + prevFitness[1] == currFitness[0] + currFitness[1])//no longer an improvement in the fitness
+                                    break;
+                        }
+                    }
+                    else if(temp.get(0).equals("add")){
+                        while(true){
+                            prevFitness = currFitness;
+                            timetable.applyAddOperator(temp.get(1), temp.get(2), temp.get(3));
+                            currFitness = timetable.calculateFitness();
+
+                            if(prevFitness[0] + prevFitness[1] == currFitness[0] + currFitness[1])//no longer an improvement in the fitness
+                                    break;
+                        }
+                    }
+                    else if(temp.get(0).equals("delete")){
+                        while(true){
+                            prevFitness = currFitness;
+                            timetable.applyDeleteOperator(temp.get(1), temp.get(2), temp.get(3));
+                            currFitness = timetable.calculateFitness();
+
+                            if(prevFitness[0] + prevFitness[1] == currFitness[0] + currFitness[1])//no longer an improvement in the fitness
+                                    break;
+                        }
+                    }
+                    else if(temp.get(0).equals("shuffle")){
+                        while(true){
+                            prevFitness = currFitness;
+                            timetable.applyShuffleOperator(temp.get(1), temp.get(2), temp.get(3));
+                            currFitness = timetable.calculateFitness();
+
+                            if(prevFitness[0] + prevFitness[1] == currFitness[0] + currFitness[1])//no longer an improvement in the fitness
+                                    break;
+                        }
+                    }
+                    else{
+                        System.out.println("Error in executeHeuristic Chromosome.java  in loop else if 2");
+                        System.exit(-1);
+                    }
+
+
+                }
+                else{
+                    System.out.println("Error in executeHeuristic in loop Chromosome.java");
+                    System.exit(-1);
+                }
+            }
+        }
     }
 
     /**
@@ -326,7 +573,7 @@ public class Chromosome {
      * @return new deep copy chromosom
      */
     public Chromosome copy(){
-        Chromosome copy = new Chromosome(this.maxCodons, this.minCodons, this.random, false, this.numCodons);
+        Chromosome copy = new Chromosome(this.maxCodons, this.minCodons, this.random, false, this.numCodons, this.timetable.copy());
 
         for(Codon c: chromosome)
             copy.chromosome.add(c.getCopy());
