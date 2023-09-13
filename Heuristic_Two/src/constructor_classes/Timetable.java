@@ -35,6 +35,16 @@ public class Timetable {
         this.deletedCourses = new ArrayList<String>();
     }
 
+    public Timetable copy(){
+        String[] tempTimetable = getTimetableCopy(this.timetable);
+        Timetable t = new Timetable(tempTimetable, reader, random);
+        List<String> dCourses = new ArrayList<String>(this.deletedCourses);
+
+        t.deletedCourses = dCourses;
+
+        return t;
+    }
+
     /**
      * 0 is for hard constraints, 1 for softconstraints
      * @return
