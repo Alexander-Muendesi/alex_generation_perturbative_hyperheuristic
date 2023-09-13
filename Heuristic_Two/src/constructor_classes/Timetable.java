@@ -1,5 +1,8 @@
 package constructor_classes;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -16,14 +19,16 @@ public class Timetable {
     private int softConstraintCost;
     private final DataReader reader;
     private final Constraints constraints;
+    private final Random random;
 
-    public Timetable(String[] timetable, DataReader reader){
+    public Timetable(String[] timetable, DataReader reader, Random random){
         this.timetable = getTimetableCopy(timetable);
+        this.random = random;
         fitness = Integer.MAX_VALUE;
         hardConstraintCost = Integer.MAX_VALUE;
         softConstraintCost = Integer.MAX_VALUE;
         this.reader = reader;
-        this.constraints = new Constraints(reader);
+        this.constraints = new Constraints(reader, random);
     }
 
     /**
@@ -105,5 +110,172 @@ public class Timetable {
                 result[k] = null;
 
         return result;
+    }
+
+    /**
+     * @param n number of solution components involved
+     * @param compSel selection Method
+     * @param comp type of solution component
+     */
+    public void applySwapOperator(String n, String compSel, String comp){
+        int numComponentsInvolved = Integer.parseInt(n);
+        List<Integer> result = new ArrayList<Integer>();
+
+        if(compSel.equals("lowestCost")){
+            if(comp.equals("lecture")){
+                result = constraints.findLowestCostLecture(numComponentsInvolved, timetable);
+            }
+            else if(comp.equals("period")){
+                result = constraints.findLowestCostPeriod(numComponentsInvolved, timetable);
+            }
+            else if(comp.equals("room")){
+                result = constraints.findHighestCostPeriod(numComponentsInvolved, timetable);
+            }
+        }
+        else if(compSel.equals("highestCost")){
+            if(comp.equals("lecture")){
+                result = constraints.findHighestCostLecture(numComponentsInvolved,timetable);
+            }
+            else if(comp.equals("period")){
+                result = constraints.findHighestCostPeriod(numComponentsInvolved, timetable); 
+            }
+            else if(comp.equals("room")){
+                result = constraints.findHighestCostRoom(numComponentsInvolved, timetable);
+            }
+        }
+        else if(compSel.equals("smallestSize")){
+            if(comp.equals("lecture")){
+                result = constraints.findLowestSizeLecture(numComponentsInvolved, timetable);
+            }
+            else if(comp.equals("period")){
+                result = constraints.findLowestCostPeriod(numComponentsInvolved, timetable);
+            }
+            else if(comp.equals("room")){
+                result = constraints.findLowestCostRoom(numComponentsInvolved, timetable);
+            }
+        }
+        else if(compSel.equals("largestSize")){
+            if(comp.equals("lecture")){
+                result = constraints.findHighestSizeLecture(numComponentsInvolved, timetable);
+            }
+            else if(comp.equals("period")){
+                result  = constraints.findHighestSizePeriod(numComponentsInvolved, timetable);
+            }
+            else if(comp.equals("room")){
+                result = constraints.findHighestSizeRoom(numComponentsInvolved, timetable);
+            }
+        }
+        else if(compSel.equals("random")){
+            if(comp.equals("lecture")){
+                result = constraints.findRandom(numComponentsInvolved, timetable);
+            }
+            else if(comp.equals("period")){
+                result = constraints.findRandom(numComponentsInvolved, timetable);
+            }
+            else if(comp.equals("room")){
+                result = constraints.findRandom(numComponentsInvolved, timetable);
+            }
+        }
+        else{
+            System.out.println("Error in applySwapOperator");
+            System.exit(-1);
+        }
+
+        for(int i=0; i<result.size(); i += 2){
+            if(i+1 >= result.size()){//only one index to swap
+                int index = result.get(i);
+                int newIndex = random.nextInt(timetable.length);
+                String temp = timetable[index];
+
+                timetable[index] = timetable[newIndex];
+                timetable[newIndex] = temp;
+            }
+            else{
+                int index1 = result.get(i);
+                int index2 = result.get(i+1);
+
+                if(index1 >=0  && index1 < timetable.length && index2 >= 0 && index2 < timetable.length){
+                    String temp =  timetable[index1];
+                    timetable[index1] = timetable[index2];
+                    timetable[index2] = timetable[index1];
+                }
+            }
+        }
+    }
+
+    public void applyMoveOperator(String n, String compSel, String comp){
+        int numComponentsInvolved = Integer.parseInt(n);
+        List<Integer> result = new ArrayList<Integer>();
+
+        if(compSel.equals("lowestCost")){
+            if(comp.equals("lecture")){
+                result = constraints.findLowestCostLecture(numComponentsInvolved, timetable);
+            }
+            else if(comp.equals("period")){
+                result = constraints.findLowestCostPeriod(numComponentsInvolved, timetable);
+            }
+            else if(comp.equals("room")){
+                result = constraints.findHighestCostPeriod(numComponentsInvolved, timetable);
+            }
+        }
+        else if(compSel.equals("highestCost")){
+            if(comp.equals("lecture")){
+                result = constraints.findHighestCostLecture(numComponentsInvolved,timetable);
+            }
+            else if(comp.equals("period")){
+                result = constraints.findHighestCostPeriod(numComponentsInvolved, timetable); 
+            }
+            else if(comp.equals("room")){
+                result = constraints.findHighestCostRoom(numComponentsInvolved, timetable);
+            }
+        }
+        else if(compSel.equals("smallestSize")){
+            if(comp.equals("lecture")){
+                result = constraints.findLowestSizeLecture(numComponentsInvolved, timetable);
+            }
+            else if(comp.equals("period")){
+                result = constraints.findLowestCostPeriod(numComponentsInvolved, timetable);
+            }
+            else if(comp.equals("room")){
+                result = constraints.findLowestCostRoom(numComponentsInvolved, timetable);
+            }
+        }
+        else if(compSel.equals("largestSize")){
+            if(comp.equals("lecture")){
+                result = constraints.findHighestSizeLecture(numComponentsInvolved, timetable);
+            }
+            else if(comp.equals("period")){
+                result  = constraints.findHighestSizePeriod(numComponentsInvolved, timetable);
+            }
+            else if(comp.equals("room")){
+                result = constraints.findHighestSizeRoom(numComponentsInvolved, timetable);
+            }
+        }
+        else if(compSel.equals("random")){
+            if(comp.equals("lecture")){
+                result = constraints.findRandom(numComponentsInvolved, timetable);
+            }
+            else if(comp.equals("period")){
+                result = constraints.findRandom(numComponentsInvolved, timetable);
+            }
+            else if(comp.equals("room")){
+                result = constraints.findRandom(numComponentsInvolved, timetable);
+            }
+        }
+        else{
+            System.out.println("Error in applyMove operator");
+            System.exit(-1);
+        }
+
+        for(int i=0; i<result.size(); i++){
+            int index = result.get(i);
+
+            int randomIndex = random.nextInt(timetable.length);
+
+            String temp = timetable[index];
+            timetable[index] = timetable[randomIndex];
+            timetable[randomIndex] = temp;
+        }
+        
     }
 }
