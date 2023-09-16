@@ -1,0 +1,9 @@
+Seed: 2154645
+Instance Number: 11 HC: 8 SC: 61
+Instance Number: 18 HC: 1 SC: 152
+Instance Number: 1 HC: 0 SC: 56
+Instance Number: 14 HC: 32 SC: 454
+Instance Number: 15 HC: 28 SC: 379
+Instance Number: 13 HC: 61 SC: 469
+Instance Number: 3 HC: 28 SC: 379
+Instance Number: 4 HC: 62 SC: 457
