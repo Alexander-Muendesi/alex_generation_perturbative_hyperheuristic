@@ -40,6 +40,7 @@ public class GrammaticalEvolution {
     }
 
     public void execute(){
+        numIterations = 0;
         int stopCounter = 0;
         int prevBest = -1;
 
@@ -48,7 +49,7 @@ public class GrammaticalEvolution {
         Chromosome bestIndividual = null;
 
         while(numIterations < maxGenerations && stopCounter < 50){
-            System.out.println("Num iterations: " + numIterations);
+            // System.out.println("Num iterations: " + numIterations);
 
             if(bestIndividual != null)
                 prevBest = bestIndividual.getFitness();
@@ -57,16 +58,18 @@ public class GrammaticalEvolution {
             
             numIterations++;
             generateNewPopulation();
-            bestIndividual.printFitness();
+            // bestIndividual.printFitness();
 
             if(bestIndividual.getFitness() == prevBest)
                 stopCounter++;
             else
                 stopCounter = 0;
         }
+            
+        System.out.print("Instance Number: " + dataReader.filenumber + " ");
         bestIndividual.printFitness();
-        System.out.println(bestIndividual.programRepresantation);
-        System.out.println(bestIndividual.timetable.deletedCourses.size());
+        // System.out.println(bestIndividual.programRepresantation);
+        // System.out.println(bestIndividual.timetable.deletedCourses.size());
     }
 
     /**
