@@ -30,7 +30,11 @@ public class App {
 
         // parameterTuning();
         while(seed < 1000){
+            long startTime = System.currentTimeMillis();
             executeRun();
+            long endTime = System.currentTimeMillis();
+            double executionTime = (endTime - startTime) / 60000.0;
+            System.out.println("Execution Time: " + executionTime + "\n");
             seed++;
         }
     }
