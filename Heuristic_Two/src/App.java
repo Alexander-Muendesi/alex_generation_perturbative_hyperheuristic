@@ -13,7 +13,7 @@ import data_classes.DataReader;
 
 public class App {
 
-    public static int seed = 0;
+    public static long seed = 1694894941884L;
     public static void main(String[] args) throws Exception {
         // //TODO: the major problem with add and delete is that the delete operator is monopolizing the chromosomes and deleting most elements
         // Random random = new Random(2154645);
@@ -29,19 +29,21 @@ public class App {
         // ge.execute();
 
         // parameterTuning();
-        while(seed < 1000){
+        int counter = 0;
+        while(counter < 1000){
             long startTime = System.currentTimeMillis();
             executeRun();
             long endTime = System.currentTimeMillis();
             double executionTime = (endTime - startTime) / 60000.0;
             System.out.println("Execution Time: " + executionTime + "\n");
-            seed++;
+            counter++;
+            seed = System.currentTimeMillis();
         }
     }
 
     public static void executeRun(){
         System.out.println("Seed: " + seed);
-        ExecutorService executorService = Executors.newFixedThreadPool(8);
+        ExecutorService executorService = Executors.newFixedThreadPool(2);
 
         List<Future<?>> fs = new ArrayList<>();
         
